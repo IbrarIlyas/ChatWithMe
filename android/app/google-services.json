@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "887109667381",
+    "project_id": "chatit-1601c",
+    "storage_bucket": "chatit-1601c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887109667381:android:fdef29056f48813fb8bf7c",
+        "android_client_info": {
+          "package_name": "com.example.chatwm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887109667381-bcs9uhmnio7c3ln2hmhhqmqfoflf44gc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatwm",
+            "certificate_hash": "a39da0aa17a7f9ecbac17187f604750c243f8d03"
+          }
+        },
+        {
+          "client_id": "887109667381-r1ta8fursqlggnumh8d81oael8k70ik1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR87CZ2YxgdC8gWYEkZAXEzIfdliMR_8I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887109667381-r1ta8fursqlggnumh8d81oael8k70ik1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "887109667381-uigmd68d77djquq0haghl3fa42udieg4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatwm"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
