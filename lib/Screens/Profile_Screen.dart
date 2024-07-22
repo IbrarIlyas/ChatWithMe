@@ -3,6 +3,7 @@ import 'package:chatwm/Constant/constant.dart';
 import 'package:chatwm/Models/User.dart';
 import 'package:chatwm/Screens/Auth_Screen.dart/Login_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -51,14 +52,18 @@ class ProfilePage extends StatelessWidget {
                         Positioned(
                           bottom: 0,
                           right: 4,
-                          child: ClipOval(
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
                               color: whitecolor,
-                              child: const Icon(
-                                Icons.edit,
-                                color: purple2,
-                              ),
+                            ),
+                            padding: const EdgeInsets.all(2),
+                            child: IconButton(
+                              onPressed: () {
+                                ShowBottomSheet(context);
+                              },
+                              icon: const Icon(Icons.edit),
+                              color: purple2,
                             ),
                           ),
                         ),
@@ -133,13 +138,21 @@ class ProfilePage extends StatelessWidget {
             bottom: 16,
             child: ElevatedButton.icon(
               onPressed: () async {
-                Dialogs.showprogressbar(context);
-                await Api.auth.signOut().then((value) async {
-                  await GoogleSignIn().signOut().then((value) {
-                    Navigator.pop(context);
-                    Get.offAll(LoginScreen());
-                  });
-                });
+                try {
+                  Dialogs.showprogressbar(context);
+
+                  await GoogleSignIn().signOut();
+
+                  await Api.auth.signOut();
+
+                  await GoogleSignIn().disconnect();
+
+                  Navigator.of(context).pop();
+                  Get.offAll(() => LoginScreen());
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  Get.snackbar('Error', 'Failed to log out: $e');
+                }
               },
               icon: const Icon(
                 Icons.logout_outlined,
@@ -162,4 +175,69 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+}
+
+void ShowBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+      context: context,
+      backgroundColor: whitecolor,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+      builder: (_) {
+        return ListView(
+          shrinkWrap: true,
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            const Center(
+              child: Text(
+                'Select Profile Picture',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 20,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        fixedSize: const Size(100, 100),
+                        backgroundColor: whitecolor,
+                        alignment: Alignment.center),
+                    onPressed: () {},
+                    child: Image.asset(
+                      'assets/Images/picture.png',
+                    )),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 20,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        fixedSize: const Size(100, 100),
+                        backgroundColor: whitecolor,
+                        alignment: Alignment.center),
+                    onPressed: () {},
+                    child: Image.asset(
+                      'assets/Images/camera.png',
+                    )),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+          ],
+        );
+      });
 }

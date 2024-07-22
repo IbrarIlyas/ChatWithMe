@@ -53,10 +53,11 @@ class Api {
     await firestore.collection('users').doc(User.Id).set(User.toJson());
   }
 
-  static Stream<QuerySnapshot<Object?>>? getAllUser() {
-    return Api.firestore
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUser() {
+    return firestore
         .collection('users')
         .where('Id', isNotEqualTo: currentUser.uid)
+        .orderBy('Id')
         .snapshots();
   }
 }
