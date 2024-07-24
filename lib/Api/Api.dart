@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:chatwm/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class Api {
   static FirebaseAuth auth = FirebaseAuth.instance;
 
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  static FirebaseStorage firebasestorage = FirebaseStorage.instance;
 
   static User currentUser = auth.currentUser!;
 
@@ -59,5 +64,28 @@ class Api {
         .where('Id', isNotEqualTo: currentUser.uid)
         .orderBy('Id')
         .snapshots();
+  }
+
+  static Future<void> updateProfilePic(File file) async {
+    final ext = file.path.split('.').last;
+
+    final ref = await firebasestorage.ref('ProfilePic/${currentUser.uid}.$ext');
+
+    await ref
+        .putFile(file, SettableMetadata(contentType: 'image/$ext'))
+        .then((onValue) {
+      print('bYte uploaded : ${onValue.bytesTransferred / 1000}');
+    });
+
+    me.Image = await ref.getDownloadURL();
+
+    await firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .update({'Image': me.Image});
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages() {
+    return firestore.collection('messages').snapshots();
   }
 }
