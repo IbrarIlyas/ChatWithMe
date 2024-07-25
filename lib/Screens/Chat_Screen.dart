@@ -1,11 +1,10 @@
 import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Constant/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
 import '../Api/Api.dart';
+import '../Helpers/MessageBuble.dart';
+import '../Models/Message.dart';
 import '../Models/User.dart';
 
 class ChattingSCreen extends StatefulWidget {
@@ -17,6 +16,9 @@ class ChattingSCreen extends StatefulWidget {
 }
 
 class _ChattingSCreenState extends State<ChattingSCreen> {
+  List<Message> messageList = [];
+  TextEditingController messageController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -45,27 +47,41 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
               children: [
                 Expanded(
                   child: StreamBuilder(
-                    stream: Api.getAllMessages(),
+                    stream: Api.getAllMessages(widget._user),
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
                         case ConnectionState.waiting:
                         case ConnectionState.none:
                           return const Center(
-                            child: CircularProgressIndicator(),
+                            child: SizedBox(),
                           );
                         case ConnectionState.active:
                         case ConnectionState.done:
                           if (snapshot.hasData) {
-                            final data = snapshot.data!.docs;
-                            print(jsonEncode(data[0].data()));
+                            messageList = snapshot.data!.docs
+                                .map((doc) => Message.fromJson(doc.data()))
+                                .toList();
                           }
-                          return ListView.builder(
-                            itemCount: 10,
-                            physics: const BouncingScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return Placeholder();
-                            },
-                          );
+                          if (messageList.isNotEmpty) {
+                            return ListView.builder(
+                              itemCount: messageList.length,
+                              physics: const BouncingScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return MessageBubble(
+                                    message: messageList[index]);
+                              },
+                            );
+                          } else {
+                            return const Center(
+                              child: Text(
+                                "Say hi 👋",
+                                style: TextStyle(
+                                    color: whitecolor,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            );
+                          }
                       }
                     },
                   ),
@@ -86,14 +102,15 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                                   Icons.emoji_emotions_sharp,
                                   color: purple1,
                                 )),
-                            const Expanded(
+                            Expanded(
                                 child: TextField(
-                              showCursor: false,
-                              style: TextStyle(
+                              controller: messageController,
+                              cursorColor: purple1,
+                              style: const TextStyle(
                                   color: purple1, fontWeight: FontWeight.w600),
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: "   Message  ",
+                                  hintText: "Message  ",
                                   hintStyle: TextStyle(
                                       color: purple1,
                                       fontWeight: FontWeight.w400)),
@@ -121,7 +138,17 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                       backgroundColor: whitecolor,
                       child: IconButton(
                         padding: const EdgeInsets.only(left: 5),
-                        onPressed: () {},
+                        onPressed: () async {
+                          if (messageController.text.isNotEmpty) {
+                            try {
+                              await Api.sendMessage(
+                                  widget._user, messageController.text);
+                              messageController.clear();
+                            } catch (e) {
+                              print('Error sending message: $e');
+                            }
+                          }
+                        },
                         icon: const Icon(
                           Icons.send,
                           color: purple1,

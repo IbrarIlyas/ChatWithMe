@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chatwm/Models/Message.dart';
 import 'package:chatwm/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -85,7 +86,45 @@ class Api {
         .update({'Image': me.Image});
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages() {
-    return firestore.collection('messages').snapshots();
+  static String getConversationID(String id) {
+    if (id.hashCode <= currentUser.uid.hashCode) {
+      return '${currentUser.uid}_$id';
+    } else {
+      return '${id}_${currentUser.uid}';
+    }
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(
+      ChatUser user) {
+    return firestore
+        .collection('chats/${getConversationID(user.Id)}/messages/')
+        .snapshots();
+  }
+
+  static Future<void> updateReadStatus(Message msg) async {
+    firestore
+        .collection('chats/${getConversationID(msg.fromId)}/messages/')
+        .doc(msg.sendAt)
+        .update({'readAt': DateTime.now().millisecondsSinceEpoch.toString()});
+  }
+
+  static Future<void> sendMessage(ChatUser otheruser, String msg) async {
+    final time = DateTime.now().millisecondsSinceEpoch.toString();
+
+    Message message = Message(
+        toId: otheruser.Id,
+        type: Type.text,
+        readAt: '',
+        messageText: msg,
+        fromId: Api.currentUser.uid,
+        sendAt: time);
+
+    final ref = firestore
+        .collection('chats/${getConversationID(otheruser.Id)}/messages/');
+    try {
+      await ref.doc(time).set(message.toJson());
+    } catch (e) {
+      print("This is the error : $e");
+    }
   }
 }

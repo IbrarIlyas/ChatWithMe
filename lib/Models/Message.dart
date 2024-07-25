@@ -1,36 +1,39 @@
-class AutoGenerate {
-  AutoGenerate({
-    required this.ToId,
-    required this.Type,
-    required this.ReadAt,
-    required this.Message,
-    required this.FromId,
-    required this.SendAt,
+class Message {
+  Message({
+    required this.toId,
+    required this.type,
+    required this.readAt,
+    required this.messageText,
+    required this.fromId,
+    required this.sendAt,
   });
-  late String ToId;
-  late String Type;
-  late String ReadAt;
-  late String Message;
-  late String FromId;
-  late String SendAt;
 
-  AutoGenerate.fromJson(Map<String, dynamic> json) {
-    ToId = json['ToId'];
-    Type = json['Type'];
-    ReadAt = json['ReadAt'];
-    Message = json['Message'];
-    FromId = json['FromId'];
-    SendAt = json['SendAt'];
+  late String toId;
+  late Type type;
+  late String readAt;
+  late String messageText;
+  late String fromId;
+  late String sendAt;
+
+  Message.fromJson(Map<String, dynamic> json) {
+    toId = json['ToId'].toString();
+    type = json['Type'] == 'image' ? Type.image : Type.text;
+    readAt = json['ReadAt'].toString();
+    messageText = json['Message'].toString();
+    fromId = json['FromId'].toString();
+    sendAt = json['SendAt'].toString();
   }
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
-    data['ToId'] = ToId;
-    data['Type'] = Type;
-    data['ReadAt'] = ReadAt;
-    data['Message'] = Message;
-    data['FromId'] = FromId;
-    data['SendAt'] = SendAt;
+    data['ToId'] = toId;
+    data['Type'] = type.name;
+    data['ReadAt'] = readAt;
+    data['Message'] = messageText;
+    data['FromId'] = fromId;
+    data['SendAt'] = sendAt;
     return data;
   }
 }
+
+enum Type { image, text }
