@@ -105,15 +105,25 @@ class Api {
     firestore
         .collection('chats/${getConversationID(msg.fromId)}/messages/')
         .doc(msg.sendAt)
-        .update({'readAt': DateTime.now().millisecondsSinceEpoch.toString()});
+        .update({'ReadAt': DateTime.now().millisecondsSinceEpoch.toString()});
   }
 
-  static Future<void> sendMessage(ChatUser otheruser, String msg) async {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessages(
+      ChatUser user) {
+    return firestore
+        .collection('chats/${getConversationID(user.Id)}/messages/')
+        .orderBy('SendAt', descending: true)
+        .limit(1)
+        .snapshots();
+  }
+
+  static Future<void> sendMessage(
+      ChatUser otheruser, String msg, Type type) async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
 
     Message message = Message(
         toId: otheruser.Id,
-        type: Type.text,
+        type: type,
         readAt: '',
         messageText: msg,
         fromId: Api.currentUser.uid,
@@ -126,5 +136,22 @@ class Api {
     } catch (e) {
       print("This is the error : $e");
     }
+  }
+
+  static Future<void> sendImage(ChatUser otherUser, File file) async {
+    final ext = file.path.split('.').last;
+
+    final ref = await firebasestorage.ref(
+        'Images/${getConversationID(otherUser.Id)}/${DateTime.now().microsecondsSinceEpoch}.$ext');
+
+    await ref
+        .putFile(file, SettableMetadata(contentType: 'image/$ext'))
+        .then((onValue) {
+      print('Image send -> uploaded : ${onValue.bytesTransferred / 1000}');
+    });
+
+    String imageUrl = await ref.getDownloadURL();
+
+    await sendMessage(otherUser, imageUrl, Type.image);
   }
 }

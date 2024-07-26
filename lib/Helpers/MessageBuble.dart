@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Api/Api.dart';
 import 'package:chatwm/Constant/constant.dart';
 import 'package:chatwm/Helpers/DateTimeUtils.dart';
@@ -56,19 +57,36 @@ class _MessageBubbleState extends State<MessageBubble> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    widget.message.messageText,
-                    style: const TextStyle(
-                      color: whitecolor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Icon(
+                  widget.message.type == Type.text
+                      ? Text(
+                          widget.message.messageText,
+                          style: const TextStyle(
+                            color: whitecolor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                          child: CachedNetworkImage(
+                            imageUrl: widget.message.messageText,
+                            placeholder: (context, url) => const Icon(
+                              Icons.image,
+                              size: 100,
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          ),
+                        ),
+                  Icon(
                     Icons.done_all_sharp,
-                    color: Colors.black,
+                    color: widget.message.readAt.isNotEmpty
+                        ? const Color.fromARGB(255, 0, 106, 255)
+                        : whitecolor,
                     size: 15,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -79,6 +97,9 @@ class _MessageBubbleState extends State<MessageBubble> {
   }
 
   Widget otherMessage() {
+    if (widget.message.readAt.isEmpty) {
+      Api.updateReadStatus(widget.message);
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -98,24 +119,13 @@ class _MessageBubbleState extends State<MessageBubble> {
                 ),
                 border: Border.all(color: whitecolor, width: 2),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    DateTimeUtils.convertDate(
-                        context: context, time: widget.message.sendAt),
-                    style: const TextStyle(
-                      color: whitecolor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.done_all_sharp,
-                    color: Colors.black,
-                    size: 15,
-                  )
-                ],
+              child: Text(
+                widget.message.messageText,
+                style: const TextStyle(
+                  color: whitecolor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
