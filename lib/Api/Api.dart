@@ -98,6 +98,17 @@ class Api {
       ChatUser user) {
     return firestore
         .collection('chats/${getConversationID(user.Id)}/messages/')
+        .orderBy('SendAt', descending: true)
+        .snapshots();
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+      ChatUser user) {
+    // return firestore.collection('users/${user.Id}').limit(1).snapshots();
+
+    return firestore
+        .collection('users')
+        .where('Id', isEqualTo: user.Id)
         .snapshots();
   }
 
@@ -153,5 +164,12 @@ class Api {
     String imageUrl = await ref.getDownloadURL();
 
     await sendMessage(otherUser, imageUrl, Type.image);
+  }
+
+  static Future<void> updateActiveStatus({required bool isOnline}) async {
+    firestore.collection('users').doc(currentUser.uid).update({
+      'Is_Online': isOnline,
+      'Last_Active': DateTime.now().millisecondsSinceEpoch
+    });
   }
 }

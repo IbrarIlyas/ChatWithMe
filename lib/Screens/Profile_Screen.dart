@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Constant/constant.dart';
 import 'package:chatwm/Models/User.dart';
 import 'package:chatwm/Screens/Auth_Screen.dart/Login_Screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -163,8 +164,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   Dialogs.showprogressbar(context);
 
                   await GoogleSignIn().signOut();
-
                   await Api.auth.signOut();
+                  Api.auth = FirebaseAuth.instance;
+
 
                   await GoogleSignIn().disconnect();
 

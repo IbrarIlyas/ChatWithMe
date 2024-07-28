@@ -5,6 +5,7 @@ import 'package:chatwm/Screens/Profile_Screen.dart';
 import 'package:chatwm/Widget/ChatUserCard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -24,6 +25,17 @@ class _HomescreenState extends State<Homescreen> {
   @override
   void initState() {
     super.initState();
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      if (Api.auth.currentUser != null) {
+        if (message.toString().contains('paused')) {
+          Api.updateActiveStatus(isOnline: false);
+        }
+        if (message.toString().contains('resumed')) {
+          Api.updateActiveStatus(isOnline: true);
+        }
+      }
+      return Future.value(message);
+    });
     _loadUserInfo();
   }
 
@@ -136,7 +148,7 @@ class _HomescreenState extends State<Homescreen> {
                       chatUsers = snapshot.data!.docs
                           .map((doc) => ChatUser.fromJson(
                               doc.data() as Map<String, dynamic>))
-                          .toList();
+                          .toList() as List<ChatUser>;
                     }
                     return Obx(
                       () => ListView.builder(

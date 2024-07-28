@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class DateTimeUtils {
@@ -16,6 +18,21 @@ class DateTimeUtils {
       return TimeOfDay.fromDateTime(date).format(context);
     } else {
       return "${date.day} ${getmonth(date.month)}";
+    }
+  }
+
+  static getLastActiveTime(
+      {required BuildContext context, required String sendTime}) {
+    DateTime currentTime = DateTime.now();
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(int.parse(sendTime));
+    if (currentTime.day == date.day &&
+        currentTime.month == date.month &&
+        currentTime.year == date.year) {
+      return "Last since today at ${TimeOfDay.fromDateTime(date).format(context)}";
+    } else if ((currentTime.difference(date).inHours ~/ 24) == 1) {
+      return "Last since yesterday at ${TimeOfDay.fromDateTime(date).format(context)}";
+    } else {
+      return "Last Active on ${date.day} ${getmonth(date.month)} at ${TimeOfDay.fromDateTime(date).format(context)}";
     }
   }
 

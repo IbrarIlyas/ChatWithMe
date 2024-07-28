@@ -119,14 +119,29 @@ class _MessageBubbleState extends State<MessageBubble> {
                 ),
                 border: Border.all(color: whitecolor, width: 2),
               ),
-              child: Text(
-                widget.message.messageText,
-                style: const TextStyle(
-                  color: whitecolor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: widget.message.type == Type.text
+                  ? Text(
+                      widget.message.messageText,
+                      style: const TextStyle(
+                        color: whitecolor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.message.messageText,
+                        placeholder: (context, url) => const Icon(
+                          Icons.image,
+                          size: 100,
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
+                    ),
             ),
           ),
         ),

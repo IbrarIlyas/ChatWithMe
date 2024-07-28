@@ -48,11 +48,17 @@ class _ChatUserCardState extends State<ChatUserCard> {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: _message != null
-                  ? Text(
-                      _message!.messageText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
+                  ? _message!.type == Type.image
+                      ? const Text(
+                          "Image",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : Text(
+                          _message!.messageText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
                   : Text(
                       widget.user.About,
                       maxLines: 1,
