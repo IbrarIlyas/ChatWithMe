@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Constant/constant.dart';
 import 'package:chatwm/Helpers/DateTimeUtils.dart';
+import 'package:chatwm/Screens/userProfileScreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,13 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                 shadowColor: Colors.black,
                 toolbarHeight: 70,
                 automaticallyImplyLeading: false,
-                flexibleSpace: _appBar(),
+                flexibleSpace: InkWell(
+                    onTap: () {
+                      Get.to(userProfileScreen(
+                        user: widget._user,
+                      ));
+                    },
+                    child: _appBar()),
                 backgroundColor: purple2,
               ),
               backgroundColor: Colors.transparent,

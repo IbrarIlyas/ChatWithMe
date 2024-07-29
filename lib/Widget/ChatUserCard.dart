@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Api/Api.dart';
 import 'package:chatwm/Helpers/DateTimeUtils.dart';
 import 'package:chatwm/Models/User.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../Helpers/ShowProfileDialogue.dart';
 import '../Models/Message.dart';
 import '../Screens/Chat_Screen.dart';
 
@@ -64,19 +66,24 @@ class _ChatUserCardState extends State<ChatUserCard> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: CachedNetworkImage(
-                  height: 50,
-                  width: 50,
-                  imageUrl: widget.user.Image,
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) {
-                    return const CircleAvatar(
-                      child: Icon(Icons.person_2_outlined),
-                    );
-                  },
+              leading: InkWell(
+                onTap: () {
+                  Get.to(showProfileDialogue(user: widget.user));
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: CachedNetworkImage(
+                    height: 50,
+                    width: 50,
+                    imageUrl: widget.user.Image,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) {
+                      return const CircleAvatar(
+                        child: Icon(Icons.person_2_outlined),
+                      );
+                    },
+                  ),
                 ),
               ),
               trailing: _message == null
