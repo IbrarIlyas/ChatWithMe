@@ -17,6 +17,20 @@ class Api {
 
   static late ChatUser me;
 
+  // static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+
+  // static Future<void> getFirebaseToken() async {
+  //   await firebaseMessaging.requestPermission();
+
+  //   await firebaseMessaging.getToken().then((_) {
+  //     if (_ != null) {
+  //       me.PushToken = _;
+  //       print("Token is : $_");
+  //     }
+  //     print("Token is empty ");
+  //   });
+  // }
+
   static Future<void> getSelfInfo() async {
     await firestore
         .collection('users')
@@ -169,7 +183,31 @@ class Api {
   static Future<void> updateActiveStatus({required bool isOnline}) async {
     firestore.collection('users').doc(currentUser.uid).update({
       'Is_Online': isOnline,
-      'Last_Active': DateTime.now().millisecondsSinceEpoch
+      'Last_Active': DateTime.now().millisecondsSinceEpoch,
+      'Push_Token': me.PushToken
     });
+  }
+
+  static Future<void> updateMessage(
+      {required Message msg, required String updatedMsg}) async {
+    try {
+      await firestore
+          .collection('chats/${getConversationID(msg.toId)}/messages/')
+          .doc(msg.sendAt)
+          .update({'Message': updatedMsg});
+    } catch (e) {
+      print("Here is the error : $e");
+    }
+  }
+
+  static Future<void> deleteMessage(Message msg) async {
+    await firestore
+        .collection('chats/${getConversationID(msg.toId)}/messages/')
+        .doc(msg.sendAt)
+        .delete();
+
+    if (msg.type == Type.image) {
+      await firebasestorage.refFromURL(msg.messageText).delete();
+    }
   }
 }

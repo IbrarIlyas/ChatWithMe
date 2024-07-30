@@ -2,10 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatwm/Api/Api.dart';
 import 'package:chatwm/Helpers/DateTimeUtils.dart';
 import 'package:chatwm/Models/User.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../Helpers/ShowProfileDialogue.dart';
 import '../Models/Message.dart';
 import '../Screens/Chat_Screen.dart';

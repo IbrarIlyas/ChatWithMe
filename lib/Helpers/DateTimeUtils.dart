@@ -1,11 +1,24 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class DateTimeUtils {
   static convertDate({required BuildContext context, required String time}) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(int.parse(time));
     return TimeOfDay.fromDateTime(date).format(context);
+  }
+
+  static readMessageDate(
+      {required BuildContext context, required String sendTime}) {
+    DateTime currentTime = DateTime.now();
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(int.parse(sendTime));
+    if (currentTime.day == date.day &&
+        currentTime.month == date.month &&
+        currentTime.year == date.year) {
+      return "Today, ${TimeOfDay.fromDateTime(date).format(context)}";
+    } else if (currentTime.year == date.year) {
+      return "${date.day} ${getmonth(date.month)}, ${TimeOfDay.fromDateTime(date).format(context)}";
+    } else {
+      return "${date.day}/${getmonth(date.month)}/${date.year}, ${TimeOfDay.fromDateTime(date).format(context)}";
+    }
   }
 
   static getLastmessageFormat(
