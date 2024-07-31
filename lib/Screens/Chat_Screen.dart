@@ -191,20 +191,21 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                                     color: purple1,
                                   )),
                               IconButton(
-                                  onPressed: () async {
-                                    final XFile? image = await picker.pickImage(
-                                      source: ImageSource.camera,
-                                      imageQuality: 40,
-                                    );
-                                    isSendingImage.value = true;
-                                    await Api.sendImage(
-                                        widget._user, File(image!.path));
-                                    isSendingImage.value = false;
-                                  },
-                                  icon: const Icon(
-                                    Icons.camera_alt,
-                                    color: purple1,
-                                  ))
+                                onPressed: () async {
+                                  final XFile? image = await picker.pickImage(
+                                    source: ImageSource.camera,
+                                    imageQuality: 40,
+                                  );
+                                  isSendingImage.value = true;
+                                  await Api.sendImage(
+                                      widget._user, File(image!.path));
+                                  isSendingImage.value = false;
+                                },
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: purple1,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -216,8 +217,19 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                           onPressed: () async {
                             if (messageController.text.isNotEmpty) {
                               try {
-                                await Api.sendMessage(widget._user,
-                                    messageController.text, Type.text);
+                                if (messageList.isEmpty) {
+                                  await Api.sendFirstMessage(
+                                    widget._user,
+                                    messageController.text,
+                                    Type.text,
+                                  );
+                                } else {
+                                  await Api.sendMessage(
+                                    widget._user,
+                                    messageController.text,
+                                    Type.text,
+                                  );
+                                }
                                 messageController.clear();
                               } catch (e) {
                                 print('Error sending message: $e');
@@ -252,8 +264,9 @@ class _ChattingSCreenState extends State<ChattingSCreen> {
                           buttonColor: Color.fromARGB(255, 201, 77, 190),
                         ),
                         searchViewConfig: SearchViewConfig(
-                            backgroundColor: whitecolor,
-                            buttonColor: Colors.black12),
+                          backgroundColor: whitecolor,
+                          buttonColor: Colors.black12,
+                        ),
                       ),
                     )
                 ],

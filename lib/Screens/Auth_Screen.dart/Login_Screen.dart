@@ -135,11 +135,8 @@ class LoginScreen extends StatelessWidget {
             Get.offAll(() => const Homescreen());
           });
         }
-        // Add a visible confirmation of successful sign-in
         Get.snackbar(
             'Success', 'Signed in successfully ${Api.currentUser.email} !');
-
-        // Add a slight delay before navigation
         Future.delayed(const Duration(milliseconds: 300), () {
           Get.offAll(() => const Homescreen());
         });

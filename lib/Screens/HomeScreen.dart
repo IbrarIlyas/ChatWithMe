@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:chatwm/Api/Api.dart';
 import 'package:chatwm/Constant/constant.dart';
 import 'package:chatwm/Models/User.dart';
@@ -7,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({Key? key}) : super(key: key);
@@ -40,7 +40,9 @@ class _HomescreenState extends State<Homescreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    await Api.getSelfInfo();
+    await Api.getSelfInfo().then((onValue) {
+      log("Successfully updated me");
+    });
   }
 
   @override
@@ -69,12 +71,13 @@ class _HomescreenState extends State<Homescreen> {
             actions: [
               Obx(
                 () => IconButton(
-                    onPressed: () {
-                      isSearching.value = !isSearching.value;
-                    },
-                    icon: isSearching.value
-                        ? const Icon(Icons.cancel)
-                        : const Icon(Icons.search)),
+                  onPressed: () {
+                    isSearching.value = !isSearching.value;
+                  },
+                  icon: isSearching.value
+                      ? const Icon(Icons.cancel)
+                      : const Icon(Icons.search),
+                ),
               )
             ],
             automaticallyImplyLeading: false,
@@ -115,9 +118,8 @@ class _HomescreenState extends State<Homescreen> {
               Icons.message,
               color: whitecolor,
             ),
-            onPressed: () async {
-              await Api.auth.signOut();
-              await GoogleSignIn().signOut();
+            onPressed: () {
+              showAddPersonDialog(context);
             },
           ),
           body: Container(
@@ -133,36 +135,56 @@ class _HomescreenState extends State<Homescreen> {
                 ],
               ),
             ),
-            child: StreamBuilder<QuerySnapshot>(
-              stream: Api.getAllUser(),
+            child: StreamBuilder(
+              stream: Api.getMyUsers(),
               builder: (context, snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.waiting:
                   case ConnectionState.none:
                     return const Center(
-                      child: CircularProgressIndicator(),
+                      child: SizedBox(),
                     );
                   case ConnectionState.active:
                   case ConnectionState.done:
-                    if (snapshot.hasData) {
-                      chatUsers = snapshot.data!.docs
-                          .map((doc) => ChatUser.fromJson(
-                              doc.data() as Map<String, dynamic>))
-                          .toList() as List<ChatUser>;
-                    }
-                    return Obx(
-                      () => ListView.builder(
-                        itemCount: isSearching.value
-                            ? searched_User.length
-                            : chatUsers.length,
-                        physics: const BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return ChatUserCard(
-                              user: isSearching.value
-                                  ? searched_User[index]
-                                  : chatUsers[index]);
-                        },
-                      ),
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: Api.getAllUser(
+                          snapshot.data?.docs.map((e) => (e.id)).toList() ??
+                              []),
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.waiting:
+                          case ConnectionState.none:
+                            return Center(
+                              child: Text(
+                                "Say hi to Someone 👋",
+                                style:
+                                    TextStyle(color: whitecolor, fontSize: 20),
+                              ),
+                            );
+                          case ConnectionState.active:
+                          case ConnectionState.done:
+                            if (snapshot.hasData) {
+                              chatUsers = snapshot.data!.docs
+                                  .map((doc) => ChatUser.fromJson(
+                                      doc.data() as Map<String, dynamic>))
+                                  .toList();
+                            }
+                            return Obx(
+                              () => ListView.builder(
+                                itemCount: isSearching.value
+                                    ? searched_User.length
+                                    : chatUsers.length,
+                                physics: const BouncingScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return ChatUserCard(
+                                      user: isSearching.value
+                                          ? searched_User[index]
+                                          : chatUsers[index]);
+                                },
+                              ),
+                            );
+                        }
+                      },
                     );
                 }
               },
@@ -172,4 +194,73 @@ class _HomescreenState extends State<Homescreen> {
       ),
     );
   }
+}
+
+void showAddPersonDialog(BuildContext context) {
+  TextEditingController emailController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.person_add,
+              color: Colors.blue,
+            ),
+            Text(
+              "  Email",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.blue,
+              ),
+            )
+          ],
+        ),
+        contentPadding:
+            EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 10),
+        content: TextField(
+          cursorColor: purple1,
+          controller: emailController,
+          decoration: InputDecoration(
+            hintText: "Email",
+            prefixIconColor: Colors.blue,
+            prefixIcon: Icon(Icons.email),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: Colors.blue, width: 2),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (emailController.text.isNotEmpty &&
+                  emailController.text != Api.currentUser.email) {
+                await Api.addChatUser(emailController.text);
+              }
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Add',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

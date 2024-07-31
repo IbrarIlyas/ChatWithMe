@@ -1,5 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
-
 import 'package:chatwm/Models/Message.dart';
 import 'package:chatwm/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,6 +39,7 @@ class Api {
         .get()
         .then((user) async {
       if (user.exists) {
+        log(jsonEncode(user.data()));
         me = ChatUser.fromJson(user.data()!);
       } else {
         await CreateUser().then((user) => getSelfInfo());
@@ -48,6 +50,26 @@ class Api {
   static Future<bool> UserExist() async {
     return (await firestore.collection('users').doc(currentUser.uid).get())
         .exists;
+  }
+
+  static Future<bool> addChatUser(String email) async {
+    final data = await firestore
+        .collection('users')
+        .where('Email', isEqualTo: email)
+        .get();
+    if (data.docs.isNotEmpty && data.docs.first.id != currentUser.uid) {
+      //user exists
+      firestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('my_users')
+          .doc(data.docs.first.id)
+          .set({});
+      return true;
+    } else {
+      //user doesn't exists
+      return false;
+    }
   }
 
   static Future<void> UpdateUser() async {
@@ -73,12 +95,34 @@ class Api {
     await firestore.collection('users').doc(User.Id).set(User.toJson());
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUser() {
+  static getAllUser(List<String> userIdList) {
+    if (userIdList.isEmpty) {
+      return null;
+    } else {
+      return firestore
+          .collection('users')
+          .where('Id', whereIn: userIdList)
+          .orderBy('Id')
+          .snapshots();
+    }
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUsers() {
     return firestore
         .collection('users')
-        .where('Id', isNotEqualTo: currentUser.uid)
-        .orderBy('Id')
+        .doc(currentUser.uid)
+        .collection('my_users')
         .snapshots();
+  }
+
+  static Future<void> sendFirstMessage(
+      ChatUser chatUser, String msg, Type type) async {
+    await firestore
+        .collection('users')
+        .doc(chatUser.Id)
+        .collection('my_users')
+        .doc(currentUser.uid)
+        .set({}).then((value) => sendMessage(chatUser, msg, type));
   }
 
   static Future<void> updateProfilePic(File file) async {
@@ -118,8 +162,6 @@ class Api {
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
       ChatUser user) {
-    // return firestore.collection('users/${user.Id}').limit(1).snapshots();
-
     return firestore
         .collection('users')
         .where('Id', isEqualTo: user.Id)
@@ -183,7 +225,7 @@ class Api {
   static Future<void> updateActiveStatus({required bool isOnline}) async {
     firestore.collection('users').doc(currentUser.uid).update({
       'Is_Online': isOnline,
-      'Last_Active': DateTime.now().millisecondsSinceEpoch,
+      'Last_Active': DateTime.now().millisecondsSinceEpoch.toString(),
       'Push_Token': me.PushToken
     });
   }
@@ -196,7 +238,7 @@ class Api {
           .doc(msg.sendAt)
           .update({'Message': updatedMsg});
     } catch (e) {
-      print("Here is the error : $e");
+      log("Here is the error : $e");
     }
   }
 

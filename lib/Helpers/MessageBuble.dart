@@ -5,7 +5,6 @@ import 'package:chatwm/Helpers/DateTimeUtils.dart';
 import 'package:chatwm/Models/Message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:get/get.dart';
 
@@ -219,7 +218,7 @@ class _MessageBubbleState extends State<MessageBubble> {
               padding: const EdgeInsets.only(
                   top: 10, left: 10, right: 10, bottom: 3),
               decoration: BoxDecoration(
-                color: myMsgColor,
+                color: otherMsgColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -273,18 +272,34 @@ void showEditMessage(BuildContext context, String msg, Message message) {
     context: context,
     builder: (_) {
       return AlertDialog(
-        title: Icon(
-          Icons.message,
-          color: Colors.blue,
+        title: Row(
+          children: [
+            Icon(
+              Icons.message,
+              color: Colors.blue,
+            ),
+            Text(
+              "  Edit Message",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.blue,
+              ),
+            )
+          ],
         ),
         contentPadding:
             EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 10),
         content: TextField(
-          autofocus: true,
+          cursorColor: purple1,
           controller: editingController,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: Colors.blue, width: 2),
             ),
           ),
         ),
@@ -300,13 +315,12 @@ void showEditMessage(BuildContext context, String msg, Message message) {
           ),
           TextButton(
             onPressed: () async {
-              print("Updated message: $msg");
               await Api.updateMessage(
                   msg: message, updatedMsg: editingController.text);
               Navigator.pop(context);
             },
             child: Text(
-              'Update',
+              'Edit',
               style: TextStyle(color: Colors.blue),
             ),
           ),
